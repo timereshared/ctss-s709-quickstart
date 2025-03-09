@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+#
+# Run CTSS Extract plot file.
+#
+if [ $# -lt 4 ]; then
+   echo "usage: plotctss plotfile projname progname outputfile [\"cvtopts\"]"
+   echo "  example: "
+   echo "    plotctss 1 m1416 guest plotter.ps"
+   exit 1
+fi
+
+genext "P" ".plot." $1 $2 $3  >cmd.txt
+txt2bcd cmd.txt cmd.bcd 84 84
+
+#
+# Run CTSS image
+#
+rm -f trace.bin sysplot.bcd $4
+s709 $6 -C8 -mCTSS -cutilctss.cmd p=print \
+	a1r=${TAPE}/extract.tap a9=trace.bin b2r=cmd.bcd b3=sysplot.bcd $7 \
+	cd00=${DASD}/DISK1.BIN cn01=${DASD}/DRUM1.BIN cd42=${DASD}/DISK2.BIN \
+	gh00=${DASD}/DRUM2.BIN gh01=${DASD}/DRUM3.BIN
+#
+# Process output tape
+#
+if [ -s sysplot.bcd ]; then
+   echo " CONVERT PLOT FILE sysplot.bcd INTO $4"
+   plotcvt $5 sysplot.bcd
+   cp calcomp_099.ps $4
+fi
+rm -f cmd.bcd cmd.txt calcomp_099.ps

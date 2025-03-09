@@ -1,0 +1,95 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+#
+# Run CTSS Extract Job.
+#
+usage()
+{
+   echo "usage: extractctss commandfile [outputfile]"
+   echo "       extractctss mode name1 name2 projname progname [outputfile]"
+   echo "  mode: "
+   echo "    B  - BSS file"
+   echo "    L  - Listing file"
+   echo "    P  - Plotter file"
+   echo "    T  - Text file"
+   echo "  example: "
+   echo "    extractctss L hello bcd m1416 guest hello.lst"
+   exit 1
+}
+
+if [ $# -eq 0 ]; then
+   usage
+fi
+
+mode=""
+text="N"
+plot="N"
+if [ -f $1 ]; then
+   cp $1 ${TMP}/cmd.txt
+   outfile=$2
+   option=$3
+   assign=$4
+else
+   if [ $# -le 2 ]; then
+      echo "$1: File not found"
+      exit 1
+   fi
+   if [ $# -lt 5 ]; then
+      usage
+   fi
+   case "$1" in
+   l | L)
+      mode="-p"
+      text="Y"
+      ;;
+   t | T)
+      text="Y"
+      ;;
+   b | B)
+      ;;
+   p | P)
+      plot="Y"
+      ;;
+   *)
+      echo "\"$1\": Unsupported extract mode"
+      exit 1
+      ;;
+   esac
+   genext $1 $2 $3 $4 $5 > ${TMP}/cmd.txt
+   outfile=$6
+   option=$7
+   assign=$8
+fi
+txt2bcd ${TMP}/cmd.txt ${TMP}/cmd.bcd 84 84
+
+#
+# Run CTSS extract image
+#
+
+s709 $option -C8 -mCTSS -c${CMD}/utilctss.cmd p=${TMP}/print \
+	a1r=${TAPE}/extract.tap a9=${TMP}/trace.bin b2r=${TMP}/cmd.bcd b3=${TMP}/sysout.bcd $assign \
+	cd00=${DASD}/DISK1.BIN cn01=${DASD}/DRUM1.BIN cd42=${DASD}/DISK2.BIN  \
+	gh00=${DASD}/DRUM2.BIN gh01=${DASD}/DRUM3.BIN
+#
+# Process output tape
+#
+if [ -s ${TMP}/sysout.bcd -a "$outfile" != "" ]; then
+   if [ "$text" = "Y" ]; then
+      bcd2txt $mode ${TMP}/sysout.bcd $outfile 86 86
+   elif [ "$plot" = "Y" ]; then
+      plotcvt ${TMP}/sysout.bcd
+      cp calcomp_099.ps $outfile
+      rm calcomp_099.ps
+   else
+      cp ${TMP}/sysout.bcd $outfile
+   fi
+fi
+rm -f ${TMP}/cmd.txt ${TMP}/cmd.bcd ${TMP}/sysout.bcd
+rm -f ${TMP}/print.bcd ${TMP}/trace.bin
+mv printlog.lst ${OUTPUT}

@@ -1,0 +1,8 @@
+*~
+printlog.lst
+dasd/
+output/*
+tmp/*
+bin/
+ctss/src
+dist/src/

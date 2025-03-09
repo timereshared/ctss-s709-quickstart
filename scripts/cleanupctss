@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Run CTSS Salvager to cleanup *silently*.
+#
+# Usage: cleanupctss [s709options] [device assignments]
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+touch ${TMP}/cmd.txt
+make-cmd-card
+CMD_CBN=${TMP}/cmd.cbn
+
+#
+# Run CTSS Salvager image
+#
+s709 $1 -C8 -mCTSS -c${CMD}/cleanupctss.cmd r=${CMD_CBN} p=${TMP}/print \
+	a1r=${TAPE}/salv4.tap a3=${TMP}/salvage.bcd a9=${TMP}/trace.bin $2 $3 $4 $5 $6 \
+	cd00=${DASD}/DISK1.BIN cn01=${DASD}/DRUM1.BIN cd42=${DASD}/DISK2.BIN \
+	gh00=${DASD}/DRUM2.BIN gh01=${DASD}/DRUM3.BIN >cleanup.lst 2>&1
+
+bcd2txt -p ${TMP}/salvage.bcd ${OUTPUT}/salvage.lst
+rm -f ${TMP}/cmd.txt ${TMP}/cmd.bcd ${TMP}/cmd.cbn ${TMP}/print.bcd ${TMP}/salvage.bcd ${TMP}/trace.bin
+mv printlog.lst ${OUTPUT}
+mv cleanup.lst ${OUTPUT}

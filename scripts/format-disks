@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo Press Enter twice, then wait up to 50s
+echo for disks to finish formatting. When QUIT appears
+echo type q and press Enter
+echo 
+diagctss ${TAPE}/dsetup.tap ${CMD}/fmt.cmd 

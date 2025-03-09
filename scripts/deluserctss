@@ -1,0 +1,94 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+# Delete users from CTSS
+#
+# We leave behind the User's UFD and data.
+#
+
+usage()
+{
+   echo "deluserctss [options] programmername "
+   echo "  options:"
+   echo "   -p projectname"
+}
+
+projectname="M1416"
+
+# Process options.
+
+while getopts ":p:" opt; do
+   case $opt in
+   p)
+      projectname=`echo ${OPTARG} | tr [a-z] [A-Z]`
+      ;;
+   \? )
+      echo "option -${OPTARG} unknown"
+      usage
+      exit 1
+      ;;
+   :)
+      echo "option -${OPTARG} requires value"
+      usage
+      exit 1
+      ;;
+   esac
+done
+shift $(($OPTIND - 1))
+
+if [ $# -lt 1 ]; then
+   usage
+   exit
+fi
+
+# Get the current info.
+
+extractctss B uaccnt timacc m1416 cmfl02 ${TMP}/uaccnt.bcd > ${TMP}/deluserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading UACCNT file:"
+   cat ${TMP}/deluserctss.log
+   exit 1
+fi
+bcd2txt ${TMP}/uaccnt.bcd uaccnt.data 168 168
+
+extractctss B timusd timacc m1416 cmfl02 ${TMP}/timusd.bcd > ${TMP}/deluserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading TIMUSD file:"
+   cat ${TMP}/deluserctss.log
+   exit 1
+fi
+bcd2txt ${TMP}/timusd.bcd timusd.data 168 168
+rm -f ${TMP}/deluserctss.log
+
+# Call the program to do the work.
+
+userdelctss $1 ${projectname} 
+if [ $? -ne 0 ]; then
+   exit 1
+fi
+
+obj2img -t -r 168 -f TIMUSD -e TIMACC -o ${TMP}/timusd.img timusd.data
+obj2img -t -r 168 -f UACCNT -e TIMACC -o ${TMP}/uaccnt.img uaccnt.data
+
+# Update.
+
+setupctss ${TMP}/timusd.img > ${TMP}/deluserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error updating TIMUSD file:"
+   cat ${TMP}/deluserctss.log
+   exit 1
+fi
+setupctss ${TMP}/uaccnt.img > ${TMP}/deluserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error updating UACCNT file:"
+   cat ${TMP}/deluserctss.log
+   exit 1
+fi
+
+rm -f ${TMP}/timusd.* ${TMP}/uaccnt.* ${TMP}/deluserctss.log
+rm -f timusd.data uaccnt.data

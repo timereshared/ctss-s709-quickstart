@@ -1,0 +1,86 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+# Report on CTSS users
+
+usage()
+{
+   echo "reportuserctss [options] [programmername]"
+   echo "  options:"
+   echo "   -a"
+   echo "   -d"
+   echo "   -p projectname"
+}
+
+projectname="M1416"
+programmername="___ALL"
+detail=0
+
+# Process options.
+
+while getopts ":adp:" opt; do
+   case $opt in
+   a)
+      projectname="___ALL"
+      ;;
+   d)
+      detail=1
+      ;;
+   p)
+      projectname=`echo ${OPTARG} | tr [a-z] [A-Z]`
+      ;;
+   \? )
+      echo "option -${OPTARG} unknown"
+      usage
+      exit 1
+      ;;
+   :)
+      echo "option -${OPTARG} requires value"
+      usage
+      exit 1
+      ;;
+   esac
+done
+shift $(($OPTIND - 1))
+
+if [ $# -eq 1 ]; then
+   programmername=`echo $1 | tr [a-z] [A-Z]`
+fi
+
+# Get the current info.
+
+extractctss B uaccnt timacc m1416 cmfl02 ${TMP}/uaccnt.bcd > ${TMP}/rptuserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading UACCNT file:"
+   cat ${TMP}/rptuserctss.log
+   exit 1
+fi
+bcd2txt ${TMP}/uaccnt.bcd uaccnt.data 168 168
+
+extractctss B timusd timacc m1416 cmfl02 ${TMP}/timusd.bcd > ${TMP}/rptuserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading TIMUSD file:"
+   cat ${TMP}/rptuserctss.log
+   exit 1
+fi
+bcd2txt ${TMP}/timusd.bcd timusd.data 168 168
+
+extractctss T report timacc m1416 cmfl02 report.data > ${TMP}/rptuserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading REPORT file:"
+   cat ${TMP}/rptuserctss.log
+   exit 1
+fi
+rm -f ${TMP}/rptuserctss.log
+
+# Go generate the report
+
+userreportctss ${programmername} ${projectname} ${detail}
+
+rm -f report.data timusd.data uaccnt.data
+rm -f ${TMP}/timusd.bcd ${TMP}/uaccnt.bcd ${TMP}/report.bcd ${TMP}/rptuserctss.log

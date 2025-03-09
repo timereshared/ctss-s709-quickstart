@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Make container files for CTSS disks and drums
+
+if [ -z "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+mkdir -p ${DASD}
+echo Creating disks
+mkdasd -d 1302-2 ${DASD}/DISK1.BIN
+mkdasd -d 1302-2 ${DASD}/DISK2.BIN
+echo Creating drums
+mkdasd -d 7320 ${DASD}/DRUM1.BIN
+mkdasd -d 7289 ${DASD}/DRUM2.BIN
+mkdasd -d 7289 ${DASD}/DRUM3.BIN
+echo Done
+ls -sh ${DASD}

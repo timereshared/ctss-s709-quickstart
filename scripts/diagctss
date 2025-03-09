@@ -1,0 +1,36 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+#
+# Run CTSS diagnostic image
+#
+if [ "$1" = "" ];then
+   echo "usage: diagctss ctssdiagtape [commands] [s709options] [ioassignments]"
+   exit 1
+fi
+
+CMD_CARD=${TMP}/cmd.txt
+if [ "$2" = "" ]; then
+   echo "stop" > ${CMD_CARD}
+else
+   cp $2 ${CMD_CARD}
+fi
+make-cmd-card
+CMD_CBN=${TMP}/cmd.cbn
+
+#
+# Run.
+#
+s709 $3 -C8 -mCTSS -c${CMD}/diagctss.cmd r=${CMD_CBN} p=${TMP}/print \
+	a1r=$1 $4 $5 $6 $7 \
+	cd00=${DASD}/DISK1.BIN cn01=${DASD}/DRUM1.BIN cd42=${DASD}/DISK2.BIN \
+	ec32=2023:KSR-35 gh00=${DASD}/DRUM2.BIN gh01=${DASD}/DRUM3.BIN
+
+rm -f ${TMP}/cmd.txt ${TMP}/cmd.bcd ${TMP}/cmd.cbn ${TMP}/print.bcd
+mv  printlog.lst ${OUTPUT}
+

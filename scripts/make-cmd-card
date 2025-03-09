@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Make a command card for the reader
+# from text in tmp/cmd.txt
+
+txt2bcd ${TMP}/cmd.txt ${TMP}/cmd.bcd 80 80
+bcd2cbn ${TMP}/cmd

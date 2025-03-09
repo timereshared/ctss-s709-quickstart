@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+# Install the CTSS tapes
+
+setupctss ${TAPE}/com3.tap
+setupctss ${TAPE}/com1.tap
+setupctss ${TAPE}/com2.tap
+setupctss ${TAPE}/com4.tap
+setupctss ${TAPE}/com5.tap
+setupctss ${TAPE}/lisp.tap
+setupctss ${TAPE}/comlinks.tap
+cleanupctss
+setupctss ${TAPE}/comdata.tap
+setupctss ${TAPE}/quotas.tap
+setupctss ${TAPE}/fibmon.tap
+setupctss ${TAPE}/util.tap
+setupctss ${TAPE}/cmfl01.tap
+setupctss ${TAPE}/guest.tap
+setupctss ${TAPE}/progs.tap
+setupctss ${TAPE}/sysdev.tap
+cleanupctss

@@ -1,0 +1,54 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+#
+# Run CTSS DSKEDT.
+#
+# Usage: dskedtctss [commands] [s709options] [device assignments]
+
+CMD_CARD=${TMP}/cmd.txt
+if [ "$1" = "" ]; then
+   echo "stop" > ${CMD_CARD}
+else
+   cp $1 ${CMD_CARD}
+fi
+make-cmd-card
+CMD_CBN=${TMP}/cmd.cbn
+
+#
+# Run CTSS DSKREDT image
+#
+echo Press Enter twice then q and Enter
+echo
+s709 $2 -C8 -mCTSS -c${CMD}/dskedtctss.cmd r=${CMD_CBN} p=${TMP}/print \
+	a1r=${TAPE}/dskedt.tap a3=${TMP}/sysprint.bcd a9=${TMP}/trace.bin $3 $4 $5 $6 $7 \
+	b1=${TMP}/syscarry.bcd b2=${TMP}/syspunchid.bcd b4=${TMP}/syspunch.bcd \
+	cd00=${DASD}/DISK1.BIN cn01=${DASD}/DRUM1.BIN cd42=${DASD}/DISK2.BIN \
+	gh00=${DASD}/DRUM2.BIN gh01=${DASD}/DRUM3.BIN
+
+rm -f ${TMP}/cmd.txt ${TMP}/cmd.bcd ${TMP}/cmd.cbn ${TMP}/print.bcd ${TMP}/trace.bin
+mv printlog.lst ${OUTPUT}
+
+bcd2txt -p ${TMP}/sysprint.bcd ${OUTPUT}/sysprint.txt
+rm -f ${TMP}/sysprint.bcd
+
+if [ -s ${TMP}/syspunch.bcd ]
+then   
+    punchctss ${TMP}/syspunchid.bcd ${TMP}/syspunch.bcd ${OUTPUT}
+fi
+rm -f ${TMP}/syspunchid.bcd ${TMP}/syspunch.bcd
+
+if [ -s ${TMP}/syscarry.bcd ]
+then   
+    mv ${TMP}/syscarry.bcd ${OUTPUT}
+else    
+    rm -f ${TMP}/syscarry.bcd
+fi
+
+echo Output produced:
+ls -l output/* | grep -v ctss.map | grep -v printlog.lst

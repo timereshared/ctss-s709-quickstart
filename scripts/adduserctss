@@ -1,0 +1,127 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+# Add users to CTSS
+
+usage()
+{
+   echo "adduserctss [options] programmername programmernumber password"
+   echo "  options:"
+   echo "   -c \"comment\""
+   echo "   -p projectname"
+   echo "   -d diskquota"
+   echo "   -r drumquota"
+   echo "   -t tapequota"
+}
+
+projectname="M1416"
+diskquota=4000
+drumquota=0
+tapequota=0
+comment=""
+privs=1
+
+# Process options.
+
+while getopts ":c:d:p:r:t:" opt; do
+   case $opt in
+   c)
+      comment=`echo ${OPTARG} | tr [a-z] [A-Z]`
+      ;;
+   d)
+      diskquota=${OPTARG}
+      ;;
+   p)
+      projectname=`echo ${OPTARG} | tr [a-z] [A-Z]`
+      ;;
+   r)
+      drumquota=${OPTARG}
+      ;;
+   t)
+      tapequota=${OPTARG}
+      privs=101
+      ;;
+   \? )
+      echo "option -${OPTARG} unknown"
+      usage
+      exit 1
+      ;;
+   :)
+      echo "option -${OPTARG} requires value"
+      usage
+      exit 1
+      ;;
+   esac
+done
+shift $(($OPTIND - 1))
+
+if [ $# -lt 3 ]; then
+   usage
+   exit
+fi
+
+# Get the current info.
+
+extractctss B uaccnt timacc m1416 cmfl02 ${TMP}/uaccnt.bcd > ${TMP}/adduserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading UACCNT file:"
+   cat ${TMP}/adduserctss.log
+   exit 1
+fi
+bcd2txt ${TMP}/uaccnt.bcd uaccnt.data 168 168
+
+extractctss B timusd timacc m1416 cmfl02 ${TMP}/timusd.bcd > ${TMP}/adduserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error reading TIMUSD file:"
+   cat ${TMP}/adduserctss.log
+   exit 1
+fi
+bcd2txt ${TMP}/timusd.bcd timusd.data 168 168
+rm -f ${TMP}/adduserctss.log
+
+# Call the program to do the work.
+
+useraddctss $1 $2 ${projectname} $3 ${diskquota} ${drumquota} ${tapequota} \
+	"${comment}"
+if [ $? -ne 0 ]; then
+   exit 1
+fi
+
+obj2img -u -f UFD -e DATA -o ${TMP}/ufd.img ufd.data
+obj2img -q -f QUOTA -e DATA -o ${TMP}/quota.img quota.data
+obj2img -t -r 168 -f TIMUSD -e TIMACC -o ${TMP}/timusd.img timusd.data
+obj2img -t -r 168 -f UACCNT -e TIMACC -o ${TMP}/uaccnt.img uaccnt.data
+
+# Update.
+
+setupctss ${TMP}/ufd.img > ${TMP}/adduserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error adding UFD entry:"
+   cat ${TMP}/adduserctss.log
+   exit 1
+fi
+setupctss ${TMP}/quota.img > ${TMP}/adduserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error adding quotas:"
+   cat ${TMP}/adduserctss.log
+   exit 1
+fi
+setupctss ${TMP}/timusd.img > ${TMP}/adduserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error updating TIMUSD file:"
+   cat ${TMP}/adduserctss.log
+   exit 1
+fi
+setupctss ${TMP}/uaccnt.img > ${TMP}/adduserctss.log 2>&1
+if [ $? -ne 0 ]; then
+   echo "Error updating UACCNT file:"
+   cat ${TMP}/adduserctss.log
+   exit 1
+fi
+rm -f ${TMP}/ufd.* ${TMP}/quota.* ${TMP}/timusd.* ${TMP}/uaccnt.* ${TMP}/adduserctss.log
+rm -f ufd.data quota.data timusd.data uaccnt.data

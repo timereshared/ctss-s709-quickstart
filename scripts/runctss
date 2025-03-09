@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+#
+# Run CTSS.
+#
+# Usage: runctss [cardreader] [s709options] [device assignments]
+
+CMD_CARD=${TMP}/cmd.txt
+if [ "$1" = "" ]; then
+   echo "MIT8C0" > ${CMD_CARD}
+else
+   cp $1 ${CMD_CARD}
+fi
+make-cmd-card
+CMD_CBN=${TMP}/cmd.cbn
+
+cleanup () {
+    bcd2txt -p ${TMP}/ctss.bcd ${OUTPUT}/ctss.map
+    rm -f ${TMP}/cmd.txt ${TMP}/cmd.bcd ${TMP}/cmd.cbn ${TMP}/print.bcd ${TMP}/ctss.bcd ${TMP}/trace.bin
+    mv printlog.lst ${OUTPUT}
+}
+
+trap cleanup INT
+
+#
+# Run CTSS image
+#
+
+s709 $2 -C8 -mCTSS -c${CMD}/runctss.cmd r=${CMD_CBN} p=${TMP}/print \
+	a3=${TMP}/ctss.bcd a9=${TMP}/trace.bin $3 $4 $5 $6 $7 \
+	cd00=${DASD}/DISK1.BIN cn01=${DASD}/DRUM1.BIN cd42=${DASD}/DISK2.BIN \
+	ec32=${PORT} gh00=${DASD}/DRUM2.BIN gh01=${DASD}/DRUM3.BIN

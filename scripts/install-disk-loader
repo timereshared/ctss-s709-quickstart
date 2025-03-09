@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo Press Enter 4 times, then wait. When QUIT appears
+echo type q and press Enter
+echo 
+diagctss ${TAPE}/dsetup.tap ${CMD}/loader.cmd "" a2=${TAPE}/loader.tap
