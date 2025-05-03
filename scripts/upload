@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# Upload a single file to the s709 CTSS environment
+
+if [ ! -d "${DASD}" ]
+then
+    echo "Did you set up the enviroment? Try 'source env.sh'"
+    exit 1
+fi
+
+usage()
+{
+   echo "upload user file"
+}
+
+if [ $# -ne 2 -o ! -f $2 ]
+then
+   usage
+   exit
+fi
+
+user=$1
+file=$2
+
+filename=$(basename -- "$file")
+name1="${filename%.*}"
+name2="${filename##*.}"
+
+# Transform eg "tape.101" to ".TAPE. 101"
+if [ $name1 = "tape" ]
+then
+    name1=".tape."
+fi
+
+acct=`printf %6s%-6s M1416 $user | tr [a-z] [A-Z]`
+
+cp $file ${TMP}/$name1.crd
+
+obj2img -a "$acct" -f $name1 -e $name2 -t \
+        -o ${TMP}/$name1.img ${TMP}/$name1.crd
+setupctss ${TMP}/$name1.img > ${TMP}/setup.log
+grep -q ERROR ${TMP}/setup.log
+if [ $? -eq 0 ]
+then
+    echo Error uploading file $name1 $name2 to $acct
+    cat ${TMP}/setup.log
+    exit 1
+else
+    printf "    %-6s %-6s %-6s\n" $user $name1 $name2 | tr [a-z] [A-Z]
+fi
+
+rm ${TMP}/$name1.crd ${TMP}/$name1.img ${TMP}/setup.log
