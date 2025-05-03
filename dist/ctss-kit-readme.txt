@@ -1,4 +1,4 @@
-2025/02/12 CTSS Install kit
+2025/05/02 CTSS Install kit
 
 This Kit archive contains the following tapes:
 
@@ -366,98 +366,7 @@ W HHMM.T
 Connection closed by foreign host.
 
 
-3. To update the YEAR in the installed CTSS system:
-
-The SYSDEV password is "SYSTEM".
-
-$ telnet localhost 2023
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-s709 2.4.3 COMM tty0 (KSR-37) from 127.0.0.1
-
-MIT8C0: 1 USER AT MM/DD/YY 1520.3, MAX = 30
-READY.
-
-login sysdev
-W 1520.4
-Password
- M1416     6 LOGGED IN  MM/DD/YY 1520.5 FROM 700000
- HOME FILE DIRECTORY IS M1416 SYSDEV
-
-THIS IS A RECONSTRUCTED CTSS SYSTEM.
-VERSION V.R.M
-BUILT: MM/DD/YY HHMM.0
-
- CTSS BEING USED IS: MIT8C0
-R .050+.000
-
-runcom mkyear
-W 1520.7
-MKYEAR STARTED
-MACR0008     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
-MACR0054     M     SAVE   MACRO   ID,LIST       SAVE BASIC MACHINE CONDITIONS
-EQU00229     M     TYPE   MACRO   MESG,LOC,N    TYPE COMMENT TO CURRENT USER
-EQU00239     M     TYPEA  MACRO   MESG,LOC,N    TYPE COMMENT TO USER W/O C.R.
-EQU00249     M     TYPEF  MACRO   MESG,LOC,N    TYPE COMMENT IN FULL MODE
-     COMMON BREAK  72127
-     LENGTH   764
-MKYEAR HAS BEEN RUN
-R 1.316+.283
-
-logout
-W 1521.5
- M1416     6 LOGGED OUT MM/DD/YY 1521.5 FROM 700000
- TOTAL TIME USED =    .0 MIN.
-Connection closed by foreign host.
-
-For the new year to take effect the CTSS system must be shutdown and rebooted.
-
-
-4. To install the HUGE loaded (if needed):
-
-The SYSDEV password is "SYSTEM".
-
-telnet localhost 2023
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-s709 2.4.3 COMM tty0 (KSR-37) from 127.0.0.1
-
-MIT8C0: 1 USER AT 01/18/25 1535.9, MAX = 30
-READY.
-
-login sysdev
-W 1536.0
-Password
- M1416     6 LOGGED IN  MM/DD/YY 1536.2 FROM 700000
- HOME FILE DIRECTORY IS M1416 SYSDEV
-
-THIS IS A RECONSTRUCTED CTSS SYSTEM.
-VERSION V.R.M
-BUILT: MM/DD/YY HHMM.0
-BUILT: MM/SS/YY HHMM.0
-
- CTSS BEING USED IS: MIT8C0
-R .050+.000
-
-runcom mkhuge
-W 1536.4
-MKHUGE STARTED
-     LENGTH  6432
-MKHUGE HAS BEEN RUN
-R 1.200+.383
-
-logout
-W 1536.7
- M1416     6 LOGGED OUT 01/18/25 1536.7 FROM 700000
- TOTAL TIME USED =    .0 MIN.
-Connection closed by foreign host.
-
-The huge loader is now available as a standard CTSS command 'L'.
-
-
-5. To cleanly shutdown CTSS (You can't just kill it):
+3. To cleanly shutdown CTSS (You can't just kill it):
 
 In the s709 window enter a CTRL-C and you will get a prompt:
 
@@ -507,11 +416,183 @@ IBM 7094-CTSS Simulator 2.3.5
 .q
 
 
-IV. CTSS Disk Editor (DSKEDT)
+IV. System updates and additions.
+
+This section describes how to update the YEAR in your CTSS system. And how to 
+install the HUGE loader and the DOT "." program.
+
+
+1. To update the YEAR in the installed CTSS system:
+
+The SYSDEV password is "SYSTEM".
+
+$ telnet localhost 2023
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+s709 2.4.3 COMM tty0 (KSR-37) from 127.0.0.1
+
+MIT8C0: 1 USER AT MM/DD/YY 1520.3, MAX = 30
+READY.
+
+login sysdev
+W 1520.4
+Password
+ M1416     6 LOGGED IN  MM/DD/YY 1520.5 FROM 700000
+ HOME FILE DIRECTORY IS M1416 SYSDEV
+
+THIS IS A RECONSTRUCTED CTSS SYSTEM.
+VERSION V.R.M
+BUILT: MM/DD/YY HHMM.0
+
+ CTSS BEING USED IS: MIT8C0
+R .050+.000
+
+edc year fap
+W 1414.5
+Edit:
+t
+n
+p
+YEAR   BCI     1,000025      MUST BE CHANGED EVERY YEAR **************
+c /025/026/
+YEAR   BCI     1,000026      MUST BE CHANGED EVERY YEAR **************
+file
+*
+R .000+.016
+
+runcom mkyear
+W 1520.7
+MKYEAR STARTED
+MACR0008     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
+MACR0054     M     SAVE   MACRO   ID,LIST       SAVE BASIC MACHINE CONDITIONS
+EQU00229     M     TYPE   MACRO   MESG,LOC,N    TYPE COMMENT TO CURRENT USER
+EQU00239     M     TYPEA  MACRO   MESG,LOC,N    TYPE COMMENT TO USER W/O C.R.
+EQU00249     M     TYPEF  MACRO   MESG,LOC,N    TYPE COMMENT IN FULL MODE
+     COMMON BREAK  72127
+     LENGTH   764
+MKYEAR HAS BEEN RUN
+R 1.316+.283
+
+logout
+W 1521.5
+ M1416     6 LOGGED OUT MM/DD/YY 1521.5 FROM 700000
+ TOTAL TIME USED =    .0 MIN.
+Connection closed by foreign host.
+
+For the new year to take effect the CTSS system must be shutdown and rebooted.
+
+
+2. To install the HUGE loaded (if needed):
+
+The SYSDEV password is "SYSTEM".
+
+$ telnet localhost 2023
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+s709 2.4.3 COMM tty0 (KSR-37) from 127.0.0.1
+
+MIT8C0: 1 USER AT 01/18/25 1535.9, MAX = 30
+READY.
+
+login sysdev
+W 1536.0
+Password
+ M1416     6 LOGGED IN  MM/DD/YY 1536.2 FROM 700000
+ HOME FILE DIRECTORY IS M1416 SYSDEV
+
+THIS IS A RECONSTRUCTED CTSS SYSTEM.
+VERSION V.R.M
+BUILT: MM/DD/YY HHMM.0
+
+ CTSS BEING USED IS: MIT8C0
+R .050+.000
+
+runcom mkhuge
+W 1536.4
+MKHUGE STARTED
+     LENGTH  6432
+MKHUGE HAS BEEN RUN
+R 1.200+.383
+
+logout
+W 1536.7
+ M1416     6 LOGGED OUT 01/18/25 1536.7 FROM 700000
+ TOTAL TIME USED =    .0 MIN.
+Connection closed by foreign host.
+
+The huge loader is now available as a standard CTSS command 'L'.
+
+
+3. To install the DOT "." program
+
+The SYSDEV password is "SYSTEM".
+
+$ telnet localhost 2023
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+s709 2.4.3 COMM tty0 (KSR-37) from 127.0.0.1
+
+MIT8C0: 1 USER AT 05/02/25 1513.4, MAX = 30
+READY.
+
+login sysdev
+W 1513.5
+Password
+ M1416     6 LOGGED IN  05/02/25 1513.5 FROM 700000
+ HOME FILE DIRECTORY IS M1416 SYSDEV
+
+THIS IS A RECONSTRUCTED CTSS SYSTEM.
+VERSION: 1.0.9
+BUILT: 05/02/25 1457.0
+
+ CTSS BEING USED IS: MIT8C0
+R .050+.000
+
+runcom mkdot
+W 1513.8
+ MKDOT STARTED
+00009     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
+00199     M     SYM    COMMON  N
+     COMMON BREAK  76452
+     LENGTH   551
+00021     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
+00195     M     SYM    COMMON  N
+     COMMON BREAK  76452
+     LENGTH   262
+     LENGTH    51
+00017     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
+00109     M     SYM    COMMON  N
+     COMMON BREAK  76452
+     LENGTH   107
+00014     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
+00178     M     SYM    COMMON  N
+     COMMON BREAK  76452
+     LENGTH   154
+00011     M     CALL   MACRON  NAME,LIST     SUBROUTINE CALL MACRO
+00105     M     SYM    COMMON  N
+     COMMON BREAK  76452
+     LENGTH   124
+     LENGTH     4
+ MKDOT HAS BEEN RUN
+R 3.900+.733
+
+logout
+W 1514.1
+ M1416     6 LOGGED OUT 05/02/25 1514.1 FROM 700000
+ TOTAL TIME USED =    .0 MIN.
+Connection closed by foreign host.
+
+The DOT "." is now available as a standard CTSS command '.'.
+
+
+V. CTSS Disk Editor (DSKEDT)
 
 The Disk Editor allows for the processing of PRINT, punch (BPUNCH, DPUNCH or
 7PUNCH) and CARRY output requests that are queued using RQUEST command. The 
-PLOT RQUEST command is not suppored in the current DSKEDT version.
+PLOT RQUEST command is not supported in the current DSKEDT version.
 
 1. To process RQUEST queued requests enter the following to run DSKEDT:
 
@@ -585,7 +666,7 @@ SWT 4 -DWN- REQUEST FILE
 .q                                                      
 
 
-V. Plotter tape support
+VI. Plotter tape support
 
 Since the DSKEDT program does not support the PLOT RQUEST command the "plotctss"
 command script has been added. The script extracts the plotter tape file from
@@ -618,7 +699,7 @@ The pre-converted output plotter tape is left in the file "sysplot.bcd". This
 allows for re-running the plotcvt without doing another extraction.
 
 
-VI. File extractor
+VII. File extractor
 
 This script, extractctss, allows for the extraction of files from CTSS disks. 
 It can run in either a "batch" mode using a control file or in a single file
@@ -696,7 +777,7 @@ $ extractctss t cqa1 mad m1416 guest cqa1.mad
 The resulting file, cqa1.mad, has been converted to native text format.
 
 
-VII. CTSS Lisp
+VIII. CTSS Lisp
 
 The Lisp program as supplied will not run the test programs without some setup. 
 Lisp is designed to be user extensible and to use with the test programs we 
@@ -744,11 +825,12 @@ The test programs are:
    procal lisp   - Propositional Calculus program.
 
 
-VIII. Adding users to CTSS
+IX. Adding users to CTSS
 
-There is no "standard" way of adding users to CTSS; so, I added this shell
-script to take care of this.  The CTSS system must be shutdown as we are
-tweaking it from "outside". To run:
+There is no "standard" way of adding users to CTSS; so, I added the script
+"adduserctss" to take care of this. The script requires the "obj2img" program 
+from the utilities package and is in the execution path. Also, the CTSS system
+must be shutdown as we are tweaking it from "outside". To run:
 
    $ adduserctss [options] programmername programmernumber password
 
@@ -760,19 +842,21 @@ Where options are:
    -r drumquota       - Drum quota for user, default 0 blocks.
    -t tapequota       - Tape quota for user, default 0 blocks.
 
+
+
 The programmer name, project name and password are limited to 6 characters.
 The comment information is placed in an unused field in the TIMUSD file.
 
 Example:
 
-   $ adduserctss -c "Bob Dobbs" -d 3000 dobbs 6 genius
+   $ adduserctss dobbs 6 genius
 
 
-IX. Deleting users from CTSS
+X. Deleting users from CTSS
 
-There is no "standard" way of deleting users from CTSS; so, I added this shell
-script to take care of this.  The CTSS system must be shutdown as we are
-tweaking it from "outside". To run:
+The script requires the "obj2img" program from the utilities package and is in
+the execution path. Also, the CTSS system must be shutdown as we are tweaking
+it from "outside". To run:
 
    $ deluserctss [options] programmername
 
@@ -787,7 +871,7 @@ Example:
    $ deluserctss dobbs 
 
 
-X. Rporting on users in CTSS
+XI. Rporting on users in CTSS
 
 This script generate reports of users in the CTSS system.  The CTSS system must
 be shutdown as we are accessing it from "outside". To run:
