@@ -12,13 +12,13 @@ DEST=../../../bin
 rm -rf bin/ dist/src/
 mkdir -p bin/ dist/src/ 
 cd dist/src/
-tar xzf ../packages/s709-2.4.3.tar.gz
-cd s709-2.4.3/
+tar xzf ../packages/s709-2.4.4.tar.gz
+cd s709-2.4.4/
 make
 cp ${S709_BINS} ${DEST}
 
 cd ..
-tar xzf ../packages/utils-1.1.14.tar.gz
+tar xzf ../packages/utils-1.1.15.tar.gz
 cd utils
 make clean
 make
