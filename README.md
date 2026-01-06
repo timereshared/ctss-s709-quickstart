@@ -70,7 +70,7 @@ Then start CTSS by typing `runctss`
 In a separate window, start your telnet client and connect to
 localhost port 7094. For the command line client you can type `telnet 0 7094`.
 
-Log in there by typing `login guest` and giving the password `guest`
+Log in there by typing `login guest` and giving the password `system`
 at the next prompt.
 
 You can now run CTSS commands - for example, try typing `listf` to get
